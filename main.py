@@ -4,6 +4,7 @@ import argparse
 import logging
 import sys
 
+from core import add_scholar
 from db.utils import create_db
 
 _version = "0.0.0"
@@ -26,7 +27,6 @@ class Command:
     def handle(self, **options):
         action = options['action']
         data = options.get('data', None)
-        print(data)
 
         if action in self.actions:
             method = getattr(self, f"_action_{action}", None)
@@ -37,6 +37,8 @@ class Command:
             raise RuntimeError(f"Unsupported action: {action}")
 
     def _action_help_action(self, data):
+        """Print an example about how to use the selected action
+        """
         cmd = data[0] if data else ''
         if cmd not in self.actions:
             raise RuntimeError(f"Unsupported action: {cmd}")
@@ -52,12 +54,32 @@ class Command:
         print(msg)
 
     def _action_init_db(self, data):
+        """Init the new db.
+        
+        It must not exist. It creates a new empty sqlite db file.
+        """
         create_db()
 
     def _action_add_scholar(self, data):
-        logger.info(data)
-        pass
+        """Manage the args and add the new scholar in the db.
+        """
+        pairs = {}
+        for item in data:
+            unpack = item.split('=')
+            if len(unpack) != 2:
+                err = f"Error: item '{item}' is not a key=value pair"
+                raise RuntimeError(err)
+            pairs[unpack[0]] = unpack[1]
 
+        required_fields = ('name', 'ronin_id')
+        for field in required_fields:
+            if field not in pairs:
+                err = f"Missing required field '{field}'"
+                raise RuntimeError(err)
+
+        name = pairs.pop('name')
+        ronin_id = pairs.pop('ronin_id')
+        add_scholar(name, ronin_id, **pairs)
 
 
 if __name__ == "__main__":
