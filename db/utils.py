@@ -1,6 +1,7 @@
 import logging
 
-from . import Base, engine
+from . import engine
+from .core import Base
 
 
 logger = logging.getLogger(f"{__name__}")
