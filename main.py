@@ -6,6 +6,7 @@ import sys
 
 from datetime import datetime
 
+from datamanager.core import DataManager
 from db.models import Scholar
 from db.utils import create_db
 
@@ -15,7 +16,7 @@ _version = "0.0.0"
 
 class Command:
     actions = ['help_action', 'init_db', 'add_scholar', 'get_scholar',
-               'upd_scholar', 'del_scholar']
+               'upd_scholar', 'del_scholar', 'collect_axie_data']
 
     def __init__(self):
         parser = argparse.ArgumentParser(description='Axie Scholar Tracker')
@@ -72,8 +73,6 @@ class Command:
         msg = f"E.g.:\n{sys.argv[0]} {cmd} "
         if cmd == 'help_cmd':
             msg = f"E.g.:\n{sys.argv[0]} <cmd> "
-        elif cmd == 'init_db':
-            pass
         elif cmd == 'add_scholar':
             msg += "name=antani ronin_id=1234567890..abcdef "
             msg += "[joined_date=2022-01-01T00:00:00+00:00 ...]" 
@@ -83,6 +82,9 @@ class Command:
             msg += "internal_id=42 name='Mr Wayne' battle_name=batman"
         elif cmd == 'del_scholar':
             msg += "internal_id=42"
+        else:
+            # here all the actions which does not require further help
+            pass
 
         print(msg)
 
@@ -180,11 +182,20 @@ class Command:
         scholar.delete()
         print("Deleted.")
 
+    def _action_collect_axie_data(self, data):
+        """
+        Collect data for each scholar 
+
+        """
+        print("Collecting new data from axie ...")
+        for scholar in Scholar.filter_by(is_active=True):
+            print(f'\tScholar: {scholar} ...')
+            dm = DataManager(scholar)
+            dm.collect_new_data()
+
 
 if __name__ == "__main__":
-    logging
     logger = logging.root
     logger.setLevel(logging.ERROR)
     logger.addHandler(logging.StreamHandler())
-
     c = Command()

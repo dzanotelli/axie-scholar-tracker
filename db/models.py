@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 
@@ -13,7 +13,8 @@ class Scholar(Base, SmartModelMixin):
     internal_id = Column(String, unique=True)
     name = Column(String, nullable=True)
     battle_name = Column(String(30), nullable=True)
-    join_date = Column(DateTime) 
+    join_date = Column(DateTime, default=datetime.now)
+    is_active = Column(Boolean, default=True)
 
     # ronin id without prefixes (e.g. 'ronin:' or '0x')
     ronin_id = Column(String(40))
@@ -21,31 +22,22 @@ class Scholar(Base, SmartModelMixin):
     # relashionship
     tracks = relationship("Track", back_populates="scholar")
 
-    def save(self):
-        # do this only if has not been saved yet
-        if not self.id and not self.join_date:
-            self.join_date = datetime.now()
-
-        super().save()
-
-
     def __repr__(self):
-        ronin_tag = f"{self.ronin_id[:4]}..{self.ronin_id[:-4]}"
-        return f"Scholar(name='{self.name!r} ronin_id='{ronin_tag}"
+        s = f"Scholar(internal_id={self.internal_id!r} name={self.name!r})"
+        return s
 
 
 class Track(Base, SmartModelMixin):
     __tablename__ = "track"
 
     id = Column(Integer, primary_key=True)
-    insert_date = Column(DateTime)
+    insert_date = Column(DateTime, default=datetime.now)
     slp_total = Column(Integer)
     slp_raw_total = Column(Integer)
     slp_ronin = Column(Integer)
     slp_ingame = Column(Integer)
     mmr = Column(Integer)
     rank = Column(Integer)
-
 
     # relations
     scholar_id = Column(Integer, ForeignKey('scholar.id'))
