@@ -77,7 +77,11 @@ class Command:
         elif cmd == 'add_scholar':
             msg += "name=antani ronin_id=1234567890..abcdef "
             msg += "[joined_date=2022-01-01T00:00:00+00:00 ...]" 
-        elif cmd == 'read_scholar':
+        elif cmd == 'get_scholar':
+            msg += "internal_id=42"
+        elif cmd == 'upd_scholar':
+            msg += "internal_id=42 name='Mr Wayne' battle_name=batman"
+        elif cmd == 'del_scholar':
             msg += "internal_id=42"
 
         print(msg)
@@ -122,13 +126,15 @@ class Command:
         scholars = Scholar.filter_by(**{lookup_field: lookup_value})
 
         # print to stdout
-        headers_str = " | ".join(Scholar.fields)
+        fields = list(Scholar.fields)
+        fields.remove('id')        
+        headers_str = " | ".join(fields)
         print(headers_str)
         print('-'*len(headers_str))
 
         # there should be just one (or none)
         for scholar in scholars:
-            data = [getattr(scholar, field) for field in Scholar.fields]
+            data = [getattr(scholar, field) for field in fields]
             data_str = " | ".join([str(item) for item in data])
             print(data_str)
 
@@ -145,14 +151,13 @@ class Command:
         
         internal_id = pairs.pop('internal_id')
 
-        scholars = Scholar.filter_by(internal_id=internal_id)
-        if not scholars.count():
+        scholar = Scholar.get_by(internal_id=internal_id)
+        if not scholar:
             print("Not found.")
             return
         
-        scholar = scholars[0]
         for key, value in pairs.items():
-            if key not in Scholar.fields:
+            if key not in Scholar.fields or key == 'id':
                 raise RuntimeError(f'Bad field given: {key}')
             setattr(scholar, key, value)
 
@@ -160,7 +165,20 @@ class Command:
         print('Updated.')
 
     def _action_del_scholar(self, data):
-        pass
+        pairs = self._unpack_data(data)
+        if not 'internal_id' in pairs:
+            err = "Missing 'internal_id': cannot retrieve scholar"
+            raise RuntimeError(err)
+        
+        internal_id = pairs.pop('internal_id')
+
+        scholar = Scholar.get_by(internal_id=internal_id)
+        if not scholar:
+            print("Not found.")
+            return
+
+        scholar.delete()
+        print("Deleted.")
 
 
 if __name__ == "__main__":
