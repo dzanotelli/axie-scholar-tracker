@@ -14,7 +14,8 @@ _version = "0.0.0"
 
 
 class Command:
-    actions = ['help_action', 'init_db', 'add_scholar', 'read_scholar']
+    actions = ['help_action', 'init_db', 'add_scholar', 'get_scholar',
+               'upd_scholar', 'del_scholar']
 
     def __init__(self):
         parser = argparse.ArgumentParser(description='Axie Scholar Tracker')
@@ -103,8 +104,8 @@ class Command:
         s = Scholar(**pairs)
         s.save()
 
-    def _action_read_scholar(self, data):
-        """Read a single scholar
+    def _action_get_scholar(self, data):
+        """Read scholar data
         """
         pairs = self._unpack_data(data)
         if not len(pairs):
@@ -121,15 +122,42 @@ class Command:
         scholars = Scholar.filter_by(**{lookup_field: lookup_value})
 
         # print to stdout
-        headers = ['result #'] + Scholar.fields
-        headers_str = " | ".join(headers)
+        headers_str = " | ".join(Scholar.fields)
         print(headers_str)
         print('-'*len(headers_str))
-        for i, scholar in enumerate(scholars):
-            data = [i]
-            data += [getattr(scholar, field) for field in headers[1:]]
+
+        # there should be just one (or none)
+        for scholar in scholars:
+            data = [getattr(scholar, field) for field in Scholar.fields]
             data_str = " | ".join([str(item) for item in data])
             print(data_str)
+
+        if not scholars.count():
+            print("Not found.")
+
+    def _action_upd_scholar(self, data):
+        """Update a scholar using its internal_id as lookup field
+        """
+        pairs = self._unpack_data(data)
+        if not 'internal_id' in pairs:
+            err = "Missing 'internal_id': cannot retrieve scholar"
+            raise RuntimeError(err)
+        
+        internal_id = pairs.pop('internal_id')
+
+        scholars = Scholar.filter_by(internal_id=internal_id)
+        if not scholars.count():
+            print("Not found.")
+            return
+        
+        scholar = scholars[0]
+        for key, value in pairs.items():
+            if key not in Scholar.fields:
+                raise RuntimeError(f'Bad field given: {key}')
+            setattr(scholar, key, value)
+
+        scholar.save()
+        print('Updated.')
 
     def _action_del_scholar(self, data):
         pass
