@@ -15,7 +15,6 @@ class Scholar(Base):
 
     # ronin id without prefixes (e.g. 'ronin:' or '0x')
     ronin_id = Column(String(40))  
-    personal_ronin_id = Column(String(40), nullable=True)
     
     # relashionship
     tracks = relationship("Track", back_populates="scholar")
