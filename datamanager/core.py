@@ -22,20 +22,19 @@ class DataManager:
             err = f"Error while gathering new data for scholar {self.scholar}."
             err += f" Details: {response.reason}"
             logger.error(err)
-            return
+            return False
                 
         try:
             data = json.loads(response.content)
-            print(data)
         except json.JSONDecodeError:
             err = "Cannot read json response."
             logger.error(err)
-            return
+            return False
 
         if not data:
             err = f"No data for scholar {Scholar}. Please check ronin_id"
             logger.warning(err)
-            return
+            return False
 
         t = Track()
         t.slp_total = data.get('spl_total')
@@ -46,3 +45,5 @@ class DataManager:
         t.rank = data.get('rank')
         t.scholar = self.scholar
         t.save()
+
+        return True

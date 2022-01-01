@@ -189,9 +189,12 @@ class Command:
         """
         print("Collecting new data from axie ...")
         for scholar in Scholar.filter_by(is_active=True):
-            print(f'\tScholar: {scholar} ...')
+            print(f'\tScholar: {scholar} ...', end='', flush=True)
             dm = DataManager(scholar)
-            dm.collect_new_data()
+            if dm.collect_new_data():
+                print("done.")
+            else:
+                print("error.")
 
 
 if __name__ == "__main__":

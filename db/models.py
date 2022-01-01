@@ -23,8 +23,8 @@ class Scholar(Base, SmartModelMixin):
     tracks = relationship("Track", back_populates="scholar")
 
     def __repr__(self):
-        s = f"Scholar(internal_id={self.internal_id!r} name={self.name!r})"
-        return s
+        r = f"Scholar(internal_id={self.internal_id!r} name={self.name!r})"
+        return r
 
 
 class Track(Base, SmartModelMixin):
@@ -44,4 +44,6 @@ class Track(Base, SmartModelMixin):
     scholar = relationship("Scholar", back_populates="tracks")
 
     def __repr__(self):
-        return f"{self.track_id} - {self.scholar}"
+        r = f"Track(insert_date={self.insert_date.isoformat()!r} "
+        r += f"scholar={self.scholar!r})"
+        return r
