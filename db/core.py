@@ -1,10 +1,12 @@
+import json
+
 from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.sql.expression import table
 from sqlalchemy.sql.sqltypes import DateTime
 
 from . import get_session
+from .utils import json_serial
 
 
 Base = declarative_base()
@@ -59,6 +61,12 @@ class SmartModelMixin:
         new_instance = session.query(self.__class__).get(self.id)
         for field in self.__class__.fields:
             setattr(self, field, getattr(new_instance, field, None))
+
+    def to_dict(self):
+        return {f:getattr(self, f) for f in self.fields}
+
+    def to_json(self):
+        return json.dumps(self.to_dict(), default=json_serial)
 
     @classmethod
     def filter_by(cls, **fields):
