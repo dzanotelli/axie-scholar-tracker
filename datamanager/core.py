@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import logging
 import requests
@@ -7,7 +8,7 @@ from db.models import Scholar, Track
 
 
 logger = logging.getLogger(f"{__name__}")
-axie_api_url = "https://game-api.axie.technology/api/v1/{ronin_id}"
+axie_api_url = "https://game-api.axie.technology/api/v1/ronin:{ronin_id}"
 
 
 class DataManager:
@@ -37,12 +38,14 @@ class DataManager:
             return False
 
         t = Track()
-        t.slp_total = data.get('spl_total', None)
-        t.slp_raw_total = data.get('raw_total', None)
-        t.slp_ronin = data.get('ronin_spl', None)
-        t.slp_ingame = data.get('in_game_spl', None)
         t.mmr = data.get('mmr', None)
         t.rank = data.get('rank', None)
+        t.total_slp = data.get('total_slp', None)
+        t.raw_total = data.get('raw_total', None)
+        t.in_game_slp = data.get('in_game_spl', None)
+        t.last_claim = datetime.fromtimestamp(data.get('last_claim', 0))
+        t.next_claim = datetime.fromtimestamp(data.get('next_claim', 0))
+        t.player_name = data.get('name', None)
         t.scholar = self.scholar
         t.save()
 

@@ -33,12 +33,14 @@ class Track(Base, SmartModelMixin):
 
     id = Column(Integer, primary_key=True)
     insert_date = Column(DateTime, default=datetime.now)
-    slp_total = Column(Integer)
-    slp_raw_total = Column(Integer)
-    slp_ronin = Column(Integer)
-    slp_ingame = Column(Integer)
     mmr = Column(Integer)
     rank = Column(Integer)
+    total_slp = Column(Integer)
+    raw_total = Column(Integer)
+    in_game_slp = Column(Integer)
+    last_claim = Column(DateTime)
+    next_claim = Column(DateTime)
+    player_name = Column(String) 
 
     # relations
     scholar_id = Column(Integer, ForeignKey('scholar.id', ondelete="CASCADE"))
