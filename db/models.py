@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.sql.schema import ForeignKey
 
 from .core import Base, SmartModelMixin
@@ -20,7 +20,8 @@ class Scholar(Base, SmartModelMixin):
     ronin_id = Column(String(40))
     
     # relashionship
-    tracks = relationship("Track", back_populates="scholar")
+    tracks = relationship("Track", back_populates="scholar", 
+                          cascade='all, delete', passive_deletes=True)
 
     def __repr__(self):
         r = f"Scholar(internal_id={self.internal_id!r} name={self.name!r})"
@@ -40,7 +41,7 @@ class Track(Base, SmartModelMixin):
     rank = Column(Integer)
 
     # relations
-    scholar_id = Column(Integer, ForeignKey('scholar.id'))
+    scholar_id = Column(Integer, ForeignKey('scholar.id', ondelete="CASCADE"))
     scholar = relationship("Scholar", back_populates="tracks")
 
     def __repr__(self):

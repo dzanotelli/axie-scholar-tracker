@@ -49,7 +49,7 @@ class SmartModelMixin:
         """Delete instance from database
         """
         session = get_session()
-        session.query(self.__class__).filter_by(id=self.id).delete()
+        session.delete(self)
         session.commit()
 
     def refresh_from_db(self):
@@ -58,7 +58,7 @@ class SmartModelMixin:
         session = get_session()
         new_instance = session.query(self.__class__).get(self.id)
         for field in self.__class__.fields:
-            setattr(self, field, getattr(new_instance, field))
+            setattr(self, field, getattr(new_instance, field, None))
 
     @classmethod
     def filter_by(cls, **fields):

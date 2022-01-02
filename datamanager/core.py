@@ -37,12 +37,12 @@ class DataManager:
             return False
 
         t = Track()
-        t.slp_total = data.get('spl_total')
-        t.slp_raw_total = data.get('raw_total')
-        t.slp_ronin = data.get('ronin_spl')
-        t.slp_ingame = data.get('in_game_spl')
-        t.mmr = data.get('mmr')
-        t.rank = data.get('rank')
+        t.slp_total = data.get('spl_total', None)
+        t.slp_raw_total = data.get('raw_total', None)
+        t.slp_ronin = data.get('ronin_spl', None)
+        t.slp_ingame = data.get('in_game_spl', None)
+        t.mmr = data.get('mmr', None)
+        t.rank = data.get('rank', None)
         t.scholar = self.scholar
         t.save()
 
