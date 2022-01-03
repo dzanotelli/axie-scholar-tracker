@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 
 import argparse
+import csv
+import io
+import json
 import logging
 import sys
 
 from datetime import datetime
 
 from datamanager.core import DataManager
-from db.models import Scholar
-from db.utils import create_db
+from db.models import Scholar, Track
+from db.utils import create_db, json_serial
 
 
 _version = "0.0.0"
@@ -17,7 +20,7 @@ _version = "0.0.0"
 class Command:
     actions = ['help_action', 'init_db', 'add_scholar', 'get_scholar',
                'upd_scholar', 'del_scholar', 'list_scholars', 
-               'collect_axie_data']
+               'collect_axie_data', 'get_tracks']
 
     def __init__(self):
         parser = argparse.ArgumentParser(description='Axie Scholar Tracker')
@@ -83,6 +86,8 @@ class Command:
             msg += "internal_id=42 name='Mr Wayne' battle_name=batman"
         elif cmd == 'del_scholar':
             msg += "internal_id=42"
+        elif cmd == 'get_tracks':
+            msg += "internal_id=42 [ days=0 ]\n(default days=14, 0=get all)"
         else:
             # here all the actions which does not require further help
             pass
@@ -211,10 +216,70 @@ class Command:
                 print("done.")
             else:
                 print("error.")
+    
+    def _action_get_tracks(self, data):
+        pairs = self._unpack_data(data)        
 
+        internal_id = pairs.get('internal_id', None)
+        if internal_id is None:
+            raise RuntimeError("Missing arg: internal_id")
+        
+        scholar = Scholar.get_by(internal_id=internal_id)
+        if scholar is None:
+            err = f"Scholar(internal_id='{internal_id}') not found"
+            raise RuntimeError(err)
+        
+        days = pairs.get('days', 14)
+        try:
+            days = int(days)
+            if days < 0:
+                raise ValueError
+        except ValueError:
+            raise RuntimeError('days must be a positive integer or 0')
+
+        # get data
+        dm =  DataManager(scholar)
+        tracks = dm.get_scholar_tracks(days=days)
+        
+        # return data
+        fmt = pairs.get('format', None)
+        if fmt is None:
+            # we remove the scholar_id (foreign key)
+            fields = list(Track.fields)
+            fields.remove('scholar_id')
+
+            headers = ' | '.join(fields)
+            print(headers)
+            print("-" * len(headers))
+            for track in tracks:
+                data = [getattr(track, field) for field in fields]
+                data_str = " | ".join([str(item) for item in data])
+                print(data_str)
+        elif fmt.lower() == 'json':
+            data = [track.to_dict() for track in tracks]
+            data = json.dumps(data, default=json_serial)
+            print(data)
+        elif fmt.lower() == 'csv':
+            fields = list(Track.fields)
+            fields.remove('scholar_id')
+
+            csvfile = io.StringIO()
+            csvwriter = csv.writer(csvfile, quoting=csv.QUOTE_MINIMAL)
+            csvwriter.writerow(fields)
+            for track in tracks:
+                data = [getattr(track, field) for field in fields]
+                csvwriter.writerow(data)
+
+            csvfile.seek(0)
+            for line in csvfile:
+                print(line, end='')
+            
 
 if __name__ == "__main__":
     logger = logging.root
     logger.setLevel(logging.ERROR)
     logger.addHandler(logging.StreamHandler())
-    c = Command()
+    try:
+        c = Command()
+    except Exception as e:
+        print(e)
