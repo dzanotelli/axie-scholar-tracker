@@ -16,7 +16,8 @@ _version = "0.0.0"
 
 class Command:
     actions = ['help_action', 'init_db', 'add_scholar', 'get_scholar',
-               'upd_scholar', 'del_scholar', 'collect_axie_data']
+               'upd_scholar', 'del_scholar', 'list_scholars', 
+               'collect_axie_data']
 
     def __init__(self):
         parser = argparse.ArgumentParser(description='Axie Scholar Tracker')
@@ -88,6 +89,29 @@ class Command:
 
         print(msg)
 
+    def _print_scholar_table(self, scholars):
+        """Print a table with all the scholars' data
+
+        Args:
+            scholars (list): list of Scholar
+
+        """
+        # print headers
+        fields = list(Scholar.fields)
+        fields.remove('id')        
+        headers_str = " | ".join(fields)
+        print(headers_str)
+        print('-'*len(headers_str))
+
+        # print scholar data
+        for scholar in scholars:
+            data = [getattr(scholar, field) for field in fields]
+            data_str = " | ".join([str(item) for item in data])
+            print(data_str)
+
+        if not len(scholars):
+            print("Not found.")
+
     def _action_init_db(self, data):
         """Init the new db.
         
@@ -125,23 +149,9 @@ class Command:
             err = f"'{lookup_field} is not a valid Scholar field"
             raise RuntimeError(err)
         
-        scholars = Scholar.filter_by(**{lookup_field: lookup_value})
-
-        # print to stdout
-        fields = list(Scholar.fields)
-        fields.remove('id')        
-        headers_str = " | ".join(fields)
-        print(headers_str)
-        print('-'*len(headers_str))
-
         # there should be just one (or none)
-        for scholar in scholars:
-            data = [getattr(scholar, field) for field in fields]
-            data_str = " | ".join([str(item) for item in data])
-            print(data_str)
-
-        if not scholars.count():
-            print("Not found.")
+        scholars = Scholar.filter_by(**{lookup_field: lookup_value})
+        self._print_scholar_table(scholars)
 
     def _action_upd_scholar(self, data):
         """Update a scholar using its internal_id as lookup field
@@ -181,6 +191,12 @@ class Command:
 
         scholar.delete()
         print("Deleted.")
+
+    def _action_list_scholars(self, data):
+        """Print all the scholars
+        """
+        scholars = Scholar.filter_by().all()
+        self._print_scholar_table(scholars)
 
     def _action_collect_axie_data(self, data):
         """
