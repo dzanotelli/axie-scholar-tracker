@@ -1,8 +1,8 @@
-from datetime import datetime, timedelta
 import json
 import logging
 import requests
-from sqlalchemy.sql.expression import except_
+
+from datetime import datetime, timedelta
 
 from db.models import Scholar, Track
 

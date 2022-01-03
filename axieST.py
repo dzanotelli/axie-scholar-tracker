@@ -4,10 +4,7 @@ import argparse
 import csv
 import io
 import json
-import logging
 import sys
-
-from datetime import datetime
 
 from datamanager.core import DataManager
 from db.models import Scholar, Track
@@ -276,10 +273,8 @@ class Command:
             
 
 if __name__ == "__main__":
-    logger = logging.root
-    logger.setLevel(logging.ERROR)
-    logger.addHandler(logging.StreamHandler())
     try:
         c = Command()
     except Exception as e:
+        # suppress stacktrace   
         print(e)

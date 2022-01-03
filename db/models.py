@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 
 from .core import Base, SmartModelMixin
