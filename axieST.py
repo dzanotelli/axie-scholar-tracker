@@ -6,6 +6,8 @@ import io
 import json
 import sys
 
+from sqlalchemy.engine import base
+
 from datamanager.core import DataManager
 from db.models import Scholar, Track
 from db.utils import create_db, json_serial
@@ -71,20 +73,44 @@ class Command:
         if cmd not in self.actions:
             raise RuntimeError(f"Unsupported action: {cmd}")
         
-        msg = f"E.g.:\n{sys.argv[0]} {cmd} "
-        if cmd == 'help_cmd':
-            msg = f"E.g.:\n{sys.argv[0]} <cmd> "
+        base_call = f"$ {sys.argv[0]} {cmd} "
+
+        if cmd == 'help_action':
+            msg = "Ask help about a specific action\n\n"
+            msg += f"E.g.:\n{sys.argv[0]} <cmd> "
         elif cmd == 'add_scholar':
-            msg += "name=antani ronin_id=1234567890..abcdef "
+            msg = "Add a new scholar to database\n\n"
+            msg += base_call + "name=antani ronin_id=1234567890..abcdef "
             msg += "[joined_date=2022-01-01T00:00:00+00:00 ...]" 
         elif cmd == 'get_scholar':
-            msg += "internal_id=42"
+            msg = "Print info about a scholar\n\n"
+            msg += base_call + "internal_id=42\n"
+            msg += base_call + "battle_name=batman"
         elif cmd == 'upd_scholar':
-            msg += "internal_id=42 name='Mr Wayne' battle_name=batman"
+            msg = "Update scholar info\n\n"
+            msg += base_call + "internal_id=42 name='Clark Kent' "
+            msg += "battle_name=superman\n\n"
+            msg += "The scholar being updated will be the one which matches "
+            msg += "the internal_id"
         elif cmd == 'del_scholar':
-            msg += "internal_id=42"
+            msg = "Delete a scholar from database\n\n"
+            msg += base_call + "internal_id=42"
+        elif cmd == 'list_scholars':
+            msg = "List all the scholars\n\n"
+            msg += base_call + '\n\n'
+            msg += "If a scholar is marked as not active, the system will "
+            msg += "not collect data for her."
+        elif cmd == "collect_axie_data":
+            msg = "Call the axie API and collect data of active scholars\n\n"
+            msg += base_call + '\n\n'
+            msg += "This command is meant to be called daily by the cron job."
         elif cmd == 'get_tracks':
-            msg += "internal_id=42 [ days=0 ]\n(default days=14, 0=get all)"
+            msg = "Get tracks (game info) about a scholar\n\n"
+            msg += base_call + "internal_id=42\n"
+            msg += base_call + "internal_id=42 days=7\n"
+            msg += base_call + "internal_id=42 days=0 format=json\n"
+            msg += base_call + "internal_id=42 days=0 format=csv > data.csv\n"
+            msg += "\n(days=0 means get all data, defaul is 14)"
         else:
             # here all the actions which does not require further help
             pass
@@ -152,7 +178,7 @@ class Command:
             raise RuntimeError(err)
         
         # there should be just one (or none)
-        scholars = Scholar.filter_by(**{lookup_field: lookup_value})
+        scholars = list(Scholar.filter_by(**{lookup_field: lookup_value}))
         self._print_scholar_table(scholars)
 
     def _action_upd_scholar(self, data):

@@ -1,0 +1,8 @@
+# axieST: collect scholars' data every day
+
+# you can customize 
+# - 0 0 * * * --> every day at midnight
+# - root --> with a specific user with write access in axieST directory
+# - /root/axieST_venv --> with your venv directory
+# - /opt/axie-scholar-tracker/ --> with your axieST directory
+0 0 * * * root /root/axieST_venv/bin/python /opt/axie-scholar-tracker/axieST.py
