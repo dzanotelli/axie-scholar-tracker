@@ -38,6 +38,8 @@ class Track(Base, SmartModelMixin):
     total_slp = Column(Integer)
     raw_total = Column(Integer)
     in_game_slp = Column(Integer)
+    ronin_slp = Column(Integer)
+    lifetime_slp = Column(Integer)
     last_claim = Column(DateTime)
     next_claim = Column(DateTime)
     player_name = Column(String) 

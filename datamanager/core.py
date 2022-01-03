@@ -43,6 +43,8 @@ class DataManager:
         t.total_slp = data.get('total_slp', None)
         t.raw_total = data.get('raw_total', None)
         t.in_game_slp = data.get('in_game_spl', None)
+        t.ronin_slp = data.get('ronin_slp', None)
+        t.lifetime_slp = data.get('lifetime_slp', None)
         t.last_claim = datetime.fromtimestamp(data.get('last_claim', 0))
         t.next_claim = datetime.fromtimestamp(data.get('next_claim', 0))
         t.player_name = data.get('name', None)
