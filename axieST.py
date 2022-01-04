@@ -13,7 +13,7 @@ from db.models import Scholar, Track
 from db.utils import create_db, json_serial
 
 
-_version = "0.0.0"
+_version = "0.1.0"
 
 
 class Command:
